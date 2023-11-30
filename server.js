@@ -17,6 +17,7 @@ const io = new Server(server, {
 // const io = socketIo(server, );
 
 const userRoutes = require("./controllers/userController");
+const gameRoutes = require("./controllers/gameController");
 
 app.use(cors());
 app.use(express.json());
@@ -31,6 +32,7 @@ app.use(
 );
 
 app.use(userRoutes);
+app.use("/games", gameRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

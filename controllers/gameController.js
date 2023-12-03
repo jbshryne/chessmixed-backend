@@ -5,9 +5,9 @@ const User = require("../models/user");
 const Game = require("../models/game");
 
 // index route
-router.get("/", async (req, res) => {
-  console.log("req.session.userId", req.session.userId);
-  const user = await User.findById(req.session.userId);
+router.post("/", async (req, res) => {
+  const user = await User.findById(req.body.userId).populate("games");
+  // console.log("user:", user);
   res.json(user.games);
 });
 
@@ -18,19 +18,25 @@ router.get("/hi", async (req, res) => {
 
 // seed route
 router.post("/seed", async (req, res) => {
-  const user = await User.findById(req.body.userId);
+  const currentUser = req.body.currentUser;
 
-  console.log(req.body.userId, user);
+  console.log("currentUser:", currentUser);
   const seededGames = await Game.create([
     {
-      playerWhite: req.body.userId,
+      playerWhite: {
+        playerId: currentUser._id,
+        displayName: currentUser.displayName,
+      },
       currentTurn: "w",
       fen: "rnbq1b1r/1ppPkppp/7n/8/8/p4N2/PPPBPPPP/RN1QKB1R w KQkq - 0 1",
       capturedWhite: [],
       capturedBlack: [],
     },
     {
-      playerWhite: req.body.userId,
+      playerWhite: {
+        playerId: currentUser._id,
+        displayName: currentUser.displayName,
+      },
       currentTurn: "w",
       fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       capturedWhite: [],
@@ -42,11 +48,10 @@ router.post("/seed", async (req, res) => {
   seededGames.forEach((game) => seededGameIds.push(game._id));
 
   await User.findByIdAndUpdate(
-    req.body.userId,
+    currentUser._id,
     { $set: { games: seededGameIds } },
     { new: true }
   );
-  //   res.redirect("/games");
 });
 
 // new route

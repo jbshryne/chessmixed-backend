@@ -3,12 +3,12 @@ const { Schema, model } = mongoose;
 
 const gameSchema = new Schema({
   playerWhite: {
-    ref: "User",
-    type: mongoose.Schema.Types.ObjectId,
+    playerId: { ref: "User", type: mongoose.Schema.Types.ObjectId },
+    displayName: String,
   },
   playerBlack: {
-    ref: "User",
-    type: mongoose.Schema.Types.ObjectId,
+    playerId: { ref: "User", type: mongoose.Schema.Types.ObjectId },
+    displayName: String,
   },
   fen: { type: String, required: true },
   gameTitle: String,

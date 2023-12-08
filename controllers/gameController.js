@@ -33,7 +33,7 @@ router.post("/seed", async (req, res) => {
       capturedBlack: [],
     },
     {
-      playerWhite: {
+      playerBlack: {
         playerId: currentUser._id,
         displayName: currentUser.displayName,
       },

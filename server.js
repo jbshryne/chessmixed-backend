@@ -39,16 +39,47 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log(socket.id);
+  // console.log(socket.id);
 
-  socket.on("sendMessage", (message) => {
+  socket.on("joinLobby", (currentUser) => {
+    console.log("user who's joining:", currentUser.displayName);
+    socket.join("lobby");
+    socket
+      .to("lobby")
+      .emit("userJoined", { ...currentUser, socketId: socket.id });
+  });
+
+  socket.on("leaveLobby", (currentUser) => {
+    console.log("user who's leaving:", currentUser.displayName);
+    socket.leave("lobby");
+    socket
+      .to("lobby")
+      .emit("userLeft", { ...currentUser, socketId: socket.id });
+  });
+
+  socket.on("joinRoom", (roomName) => {
+    console.log("roomName:", roomName);
+    socket.join(roomName);
+  });
+
+  socket.on("sendMessage", ({ message, room }) => {
     console.log(message);
-    socket.broadcast.emit("getMessage", message);
+    const messageWithRoom = `[ROOM ${room}] ${message}`;
+    socket.to(room).emit("getMessage", messageWithRoom);
   });
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
+  socket.on("disconnecting", () => {
+    console.log("user disconnecting:", socket.id);
+    const rooms = socket.rooms;
+    console.log("rooms:", socket.rooms);
+    rooms.forEach((room) => {
+      socket.to(room).emit("userDisconnected", socket.id);
+    });
   });
+
+  // socket.on("disconnect", () => {
+  //   console.log("user disconnected:");
+  // });
 });
 
 const PORT = process.env.PORT || 3200;

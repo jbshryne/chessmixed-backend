@@ -38,24 +38,30 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+let loggedInUsers = [];
+
 io.on("connection", (socket) => {
   // console.log(socket.id);
 
   socket.on("joinLobby", (currentUser) => {
     console.log("user who's joining:", currentUser.displayName);
     socket.join("lobby");
-    socket
-      .to("lobby")
-      .emit("userJoined", { ...currentUser, socketId: socket.id });
+    loggedInUsers.push({ ...currentUser, socketId: socket.id });
+    console.log("loggedInUsers:", loggedInUsers.length);
+    socket.emit(
+      "userJoined",
+      { ...currentUser, socketId: socket.id },
+      loggedInUsers
+    );
   });
 
-  socket.on("leaveLobby", (currentUser) => {
-    console.log("user who's leaving:", currentUser.displayName);
-    socket.leave("lobby");
-    socket
-      .to("lobby")
-      .emit("userLeft", { ...currentUser, socketId: socket.id });
-  });
+  // socket.on("leaveLobby", (currentUser) => {
+  //   console.log("user who's leaving:", currentUser.displayName);
+  //   socket.leave("lobby");
+  //   socket
+  //     .to("lobby")
+  //     .emit("userLeft", { ...currentUser, socketId: socket.id });
+  // });
 
   socket.on("joinRoom", (roomName) => {
     console.log("roomName:", roomName);
@@ -70,11 +76,12 @@ io.on("connection", (socket) => {
 
   socket.on("disconnecting", () => {
     console.log("user disconnecting:", socket.id);
-    const rooms = socket.rooms;
-    console.log("rooms:", socket.rooms);
-    rooms.forEach((room) => {
-      socket.to(room).emit("userDisconnected", socket.id);
-    });
+    // const rooms = socket.rooms;
+    // console.log("rooms:", socket.rooms);
+    // rooms.forEach((room) => {
+    loggedInUsers = loggedInUsers.filter((user) => user.socketId !== socket.id);
+    socket.emit("userDisconnected", loggedInUsers);
+    // });
   });
 
   // socket.on("disconnect", () => {

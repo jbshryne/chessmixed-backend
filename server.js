@@ -43,13 +43,12 @@ let loggedInUsers = [];
 io.on("connection", (socket) => {
   // console.log(socket.id);
 
-  socket.on("joinLobby", (currentUser) => {
+  socket.on("login", (currentUser) => {
     console.log("user who's joining:", currentUser.displayName);
-    socket.join("lobby");
     loggedInUsers.push({ ...currentUser, socketId: socket.id });
     console.log("loggedInUsers:", loggedInUsers.length);
     socket.emit(
-      "userJoined",
+      "userLoggedIn",
       { ...currentUser, socketId: socket.id },
       loggedInUsers
     );
@@ -72,6 +71,11 @@ io.on("connection", (socket) => {
     console.log(message);
     const messageWithRoom = `[ROOM ${room}] ${message}`;
     socket.to(room).emit("getMessage", messageWithRoom);
+  });
+
+  socket.on("sendNewMove", (move, room) => {
+    console.log("move:", move, "room:", room);
+    socket.to(room).emit("getNewMove", move);
   });
 
   socket.on("disconnecting", () => {

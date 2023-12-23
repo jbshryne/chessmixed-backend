@@ -26,6 +26,7 @@ router.post("/seed", async (req, res) => {
       playerWhite: {
         playerId: currentUser._id,
         displayName: currentUser.displayName,
+        username: currentUser.username,
       },
       currentTurn: "w",
       fen: "rnbq1b1r/1ppPkppp/7n/8/8/p4N2/PPPBPPPP/RN1QKB1R w KQkq - 0 1",
@@ -36,6 +37,7 @@ router.post("/seed", async (req, res) => {
       playerBlack: {
         playerId: currentUser._id,
         displayName: currentUser.displayName,
+        username: currentUser.username,
       },
       currentTurn: "w",
       fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",

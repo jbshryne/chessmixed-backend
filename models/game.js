@@ -5,10 +5,12 @@ const gameSchema = new Schema({
   playerWhite: {
     playerId: { ref: "User", type: mongoose.Schema.Types.ObjectId },
     displayName: String,
+    username: String,
   },
   playerBlack: {
     playerId: { ref: "User", type: mongoose.Schema.Types.ObjectId },
     displayName: String,
+    username: String,
   },
   fen: { type: String, required: true },
   gameTitle: String,

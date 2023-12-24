@@ -73,9 +73,9 @@ io.on("connection", (socket) => {
     socket.to(room).emit("getMessage", messageWithRoom);
   });
 
-  socket.on("sendNewMove", (move, room) => {
-    console.log("move:", move, "room:", room);
-    socket.to(room).emit("getNewMove", move);
+  socket.on("sendNewMove", (move) => {
+    console.log("move:", move);
+    socket.broadcast.emit("getNewMove", move);
   });
 
   socket.on("disconnecting", () => {

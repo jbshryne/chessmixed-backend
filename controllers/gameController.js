@@ -69,29 +69,31 @@ router.post("/seed", async (req, res) => {
 //   res.redirect("/games");
 // });
 
-// // update route (main)
-// router.put("/:id", async (req, res) => {
-//   const update = await Game.findOneAndUpdate({ _id: req.params.id }, req.body, {
-//     new: true,
-//   });
+// update route (main)
+router.put("/:id", async (req, res) => {
+  const update = await Game.findOneAndUpdate({ _id: req.params.id }, req.body, {
+    new: true,
+  });
 
-//   res.json(update);
-// });
+  res.json(update);
+});
 
 // // update route (move)
 let moveUpdateTimeout = null;
 router.put("/:id/move", async (req, res) => {
   console.log("move route hit!");
-  console.log("req.body:", req.body);
+  // console.log("req.body:", req.body);
 
   const {
     gameId,
     fen,
-    // currentTurn,
+    currentTurn,
     // opponent,
     //  pgn,
     //  validMoves
   } = req.body;
+
+  console.log("currentTurn:", currentTurn);
 
   // prevent server getting flooded w/ updates
   if (moveUpdateTimeout) {
@@ -101,7 +103,7 @@ router.put("/:id/move", async (req, res) => {
   moveUpdateTimeout = setTimeout(async () => {
     const response = await Game.findOneAndUpdate(
       { _id: gameId },
-      { fen: fen },
+      { fen: fen, currentTurn },
       {
         new: true,
       }

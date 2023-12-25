@@ -93,7 +93,7 @@ router.put("/:id/move", async (req, res) => {
     //  validMoves
   } = req.body;
 
-  console.log("currentTurn:", currentTurn);
+  // console.log("currentTurn:", currentTurn);
 
   // prevent server getting flooded w/ updates
   if (moveUpdateTimeout) {
@@ -108,7 +108,7 @@ router.put("/:id/move", async (req, res) => {
         new: true,
       }
     );
-    console.log("response:", response);
+    // console.log("response:", response);
     // res.json({ success: true });
     // console.log(update);
   }, 1000); // wait until there hasn't been a change in 1 second to call database
@@ -182,15 +182,44 @@ router.put("/:id/move", async (req, res) => {
 });
 
 // create route
-router.post("/", async (req, res) => {
-  req.body.userId = req.session.userId;
-  const game = await Game.create(req.body);
+router.post("/create", async (req, res) => {
+  console.log("req.body.currentUser:", req.body.currentUser);
 
-  await User.findByIdAndUpdate(req.session.userId, {
-    $push: { games: game._id },
+  const currentUser = req.body.currentUser;
+
+  const newGame = await Game.create({
+    playerWhite: {
+      playerId: currentUser._id,
+      displayName: currentUser.displayName,
+      username: currentUser.username,
+    },
+    playerBlack: {
+      playerId: currentUser._id,
+      displayName: currentUser.displayName,
+      username: currentUser.username,
+    },
+    currentTurn: "w",
+    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    capturedWhite: [],
+    capturedBlack: [],
   });
 
-  res.json(game);
+  await User.findByIdAndUpdate(
+    currentUser._id,
+    { $push: { games: newGame._id } },
+    { new: true }
+  );
+
+  res.json(newGame);
+
+  // req.body.userId = req.session.userId;
+  // const game = await Game.create(req.body);
+
+  // await User.findByIdAndUpdate(req.session.userId, {
+  //   $push: { games: game._id },
+  // });
+
+  // res.json(game);
 });
 
 // edit route

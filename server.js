@@ -62,9 +62,13 @@ io.on("connection", (socket) => {
   //     .emit("userLeft", { ...currentUser, socketId: socket.id });
   // });
 
-  socket.on("joinRoom", (roomName) => {
-    console.log("roomName:", roomName);
-    socket.join(roomName);
+  socket.on("joinRoom", (room) => {
+    console.log("room:", room);
+    console.log("socket.rooms:", socket.rooms);
+    if (socket.rooms.size > 1) {
+      socket.leaveAll();
+    }
+    socket.join(room);
   });
 
   socket.on("sendMessage", ({ message, room }) => {
@@ -73,9 +77,9 @@ io.on("connection", (socket) => {
     socket.to(room).emit("getMessage", messageWithRoom);
   });
 
-  socket.on("sendNewMove", (move) => {
+  socket.on("sendNewMove", (move, room) => {
     console.log("move:", move);
-    socket.broadcast.emit("getNewMove", move);
+    socket.to(room).emit("getNewMove", move);
   });
 
   socket.on("disconnecting", () => {

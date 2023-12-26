@@ -67,8 +67,11 @@ router.delete("/delete", async (req, res) => {
   console.log("delete route hit!");
   console.log("req.body:", req.body);
   const { gameId } = req.body;
-  await Game.findByIdAndDelete(gameId);
-  // res.redirect("/games");
+  const result = await Game.findByIdAndDelete(gameId);
+  console.log("result:", result);
+  if (result) {
+    res.json({ success: true });
+  }
 });
 
 // update route (main)
@@ -212,7 +215,7 @@ router.post("/create", async (req, res) => {
     { new: true }
   );
 
-  res.json(newGame);
+  res.json({ game: newGame, success: true });
 
   // req.body.userId = req.session.userId;
   // const game = await Game.create(req.body);

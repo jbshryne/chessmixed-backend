@@ -62,12 +62,14 @@ router.post("/seed", async (req, res) => {
 //   res.render("game/new", { user });
 // });
 
-// delete route
-// router.delete("/:id", async (req, res) => {
-//   const id = req.params.id;
-//   await Game.findByIdAndRemove(id);
-//   res.redirect("/games");
-// });
+// delete route;
+router.delete("/delete", async (req, res) => {
+  console.log("delete route hit!");
+  console.log("req.body:", req.body);
+  const { gameId } = req.body;
+  await Game.findByIdAndDelete(gameId);
+  // res.redirect("/games");
+});
 
 // update route (main)
 router.put("/:id", async (req, res) => {

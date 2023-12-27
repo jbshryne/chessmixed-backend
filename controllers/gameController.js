@@ -56,12 +56,6 @@ router.post("/seed", async (req, res) => {
   );
 });
 
-// new route
-// router.get("/new", async (req, res) => {
-//   const user = await User.findById(req.session.userId);
-//   res.render("game/new", { user });
-// });
-
 // delete route;
 router.delete("/delete", async (req, res) => {
   console.log("delete route hit!");
@@ -216,22 +210,7 @@ router.post("/create", async (req, res) => {
   );
 
   res.json({ game: newGame, success: true });
-
-  // req.body.userId = req.session.userId;
-  // const game = await Game.create(req.body);
-
-  // await User.findByIdAndUpdate(req.session.userId, {
-  //   $push: { games: game._id },
-  // });
-
-  // res.json(game);
 });
-
-// edit route
-// router.get("/:id/edit", async (req, res) => {
-//   const game = await Game.findById(req.params.id);
-//   res.render("game/edit", { game });
-// });
 
 // show route
 router.get("/:id", async (req, res) => {

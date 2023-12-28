@@ -214,6 +214,7 @@ router.post("/create", async (req, res) => {
 
 // show route
 router.get("/:id", async (req, res) => {
+  console.log("req.params.id:", req.params.id);
   const game = await Game.findById(req.params.id);
   res.json(game);
 });

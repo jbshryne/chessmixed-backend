@@ -8,6 +8,7 @@ const userSchema = new Schema({
   password: { type: String, required: true },
   displayName: { type: String, required: true },
   games: [{ ref: "Game", type: mongoose.Schema.Types.ObjectId }],
+  friends: [{ ref: "User", type: mongoose.Schema.Types.ObjectId }],
 });
 
 const User = new model("User", userSchema);

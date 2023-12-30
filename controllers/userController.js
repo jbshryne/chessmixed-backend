@@ -64,4 +64,10 @@ router.get("/logout", (req, res) => {
   res.json({ message: "Logout successful" });
 });
 
+router.get("/friends", async (req, res) => {
+  console.log("req.body:", req.body);
+  const user = await User.findById(req.body).populate("friends");
+  res.json(user.friends);
+});
+
 module.exports = router;

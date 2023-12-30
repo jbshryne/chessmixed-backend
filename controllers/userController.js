@@ -4,6 +4,11 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 // const session = require("express-session");
 
+router.get("/hi", (req, res) => {
+  console.log("hi");
+  res.json({ success: true });
+});
+
 router.get("/login", (req, res) => {
   console.log("login page");
   res.json({ message: "login page" });
@@ -20,7 +25,7 @@ router.post("/login", async (req, res) => {
         req.session.username = userToLogin.username;
 
         console.log(req.session);
-        res.json(userToLogin);
+        res.json({ user: userToLogin, message: "sucesss" });
       } else {
         res.status(401).json({ message: "Incorrect Password" });
         // res.json({ message: "Incorrect Password" });

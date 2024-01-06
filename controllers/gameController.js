@@ -61,9 +61,29 @@ router.delete("/delete", async (req, res) => {
   console.log("delete route hit!");
   console.log("req.body:", req.body);
   const { gameId } = req.body;
+  const game = await Game.findById(gameId);
+  console.log("game to be deleted:", game);
+  const whitePlayer = await User.findById(game.playerWhite.playerId);
+  // console.log("whitePlayer:", whitePlayer);
+  const blackPlayer = await User.findById(game.playerBlack.playerId);
+  // console.log("blackPlayer:", blackPlayer);
   const result = await Game.findByIdAndDelete(gameId);
   console.log("result:", result);
+
   if (result) {
+    const whitePlayerGames = await User.findByIdAndUpdate(
+      whitePlayer._id,
+      { $pull: { games: gameId } },
+      { new: true }
+    );
+    const blackPlayerGames = await User.findByIdAndUpdate(
+      blackPlayer._id,
+      { $pull: { games: gameId } },
+      { new: true }
+    );
+
+    console.log("whitePlayerGames:", whitePlayerGames);
+    console.log("blackPlayerGames:", blackPlayerGames);
     res.json({ success: true });
   }
 });

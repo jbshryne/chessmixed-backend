@@ -63,10 +63,9 @@ router.delete("/delete", async (req, res) => {
   const { gameId } = req.body;
   const game = await Game.findById(gameId);
   console.log("game to be deleted:", game);
+
   const whitePlayer = await User.findById(game.playerWhite.playerId);
-  // console.log("whitePlayer:", whitePlayer);
   const blackPlayer = await User.findById(game.playerBlack.playerId);
-  // console.log("blackPlayer:", blackPlayer);
   const result = await Game.findByIdAndDelete(gameId);
   console.log("result:", result);
 
@@ -202,32 +201,51 @@ router.put("/:id/move", async (req, res) => {
 
 // create route
 router.post("/create", async (req, res) => {
-  console.log("req.body.currentUser:", req.body.currentUser);
+  const { playerWhiteId, playerBlackId, currentTurn, fen } = req.body;
 
-  const currentUser = req.body.currentUser;
+  const playerWhite = await User.findById(playerWhiteId);
+  const playerBlack = await User.findById(playerBlackId);
+  const position =
+    fen === "start"
+      ? `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR ${currentTurn} KQkq - 0 1`
+      : `${fen} ${currentTurn} KQkq - 0 1`;
 
   const newGame = await Game.create({
     playerWhite: {
-      playerId: currentUser._id,
-      displayName: currentUser.displayName,
-      username: currentUser.username,
+      playerId: playerWhiteId,
+      displayName: playerWhite.displayName,
+      username: playerWhite.username,
     },
     playerBlack: {
-      playerId: currentUser._id,
-      displayName: currentUser.displayName,
-      username: currentUser.username,
+      playerId: playerBlackId,
+      displayName: playerBlack.displayName,
+      username: playerBlack.username,
     },
-    currentTurn: "w",
-    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    currentTurn,
+    fen: position,
     capturedWhite: [],
     capturedBlack: [],
   });
 
-  await User.findByIdAndUpdate(
-    currentUser._id,
-    { $push: { games: newGame._id } },
-    { new: true }
-  );
+  if (playerWhiteId === playerBlackId) {
+    await User.findByIdAndUpdate(
+      playerWhiteId,
+      { $push: { games: newGame._id } },
+      { new: true }
+    );
+  } else {
+    await User.findByIdAndUpdate(
+      playerWhiteId,
+      { $push: { games: newGame._id } },
+      { new: true }
+    );
+
+    await User.findByIdAndUpdate(
+      playerBlackId,
+      { $push: { games: newGame._id } },
+      { new: true }
+    );
+  }
 
   res.json({ game: newGame, success: true });
 });

@@ -43,11 +43,24 @@ router.get("/signup", (req, res) => {
 
 router.post("/signup", async (req, res) => {
   console.log(req.body);
-  if (req.body.username && req.body.password) {
-    let plainTextPassword = req.body.password;
+  const userObject = req.body;
+
+  // seed all current users into new user's friends list
+  const allUsers = await User.find();
+  const allUsersIds = allUsers.map((user) => user._id);
+  userObject.friends = allUsersIds;
+
+  if (userObject.username && userObject.password) {
+    let plainTextPassword = userObject.password;
     bcrypt.hash(plainTextPassword, 10, async (err, hashedPassword) => {
-      req.body.password = hashedPassword;
-      const response = await User.create(req.body);
+      userObject.password = hashedPassword;
+      const response = await User.create(userObject);
+
+      // push new user into all current users' friends list
+      allUsers.forEach((user) => {
+        user.friends.push(response._id);
+        user.save();
+      });
 
       console.log(response);
 

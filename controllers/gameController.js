@@ -102,14 +102,7 @@ router.put("/:id/move", async (req, res) => {
   console.log("move route hit!");
   // console.log("req.body:", req.body);
 
-  const {
-    gameId,
-    fen,
-    currentTurn,
-    // opponent,
-    //  pgn,
-    //  validMoves
-  } = req.body;
+  const { gameId, fen, currentTurn, opponent, pgn, validMoves } = req.body;
 
   // console.log("currentTurn:", currentTurn);
 
@@ -131,72 +124,69 @@ router.put("/:id/move", async (req, res) => {
     // console.log(update);
   }, 1000); // wait until there hasn't been a change in 1 second to call database
 
-  //   if (opponent === "cpu" && currentTurn === "b") {
-  //     const gptSystemMsg = `You are a chess engine, playing a chess match against the user as black and trying to win.  The current PGN is: ${pgn}
+  if (opponent === "cpu" && currentTurn === "b") {
+    const gptSystemMsg = `You are a chess engine, playing a chess match against the user as black and trying to win.  The current PGN is: ${pgn}
 
-  //   The current FEN notation is:
-  //   ${fen}
+    The current FEN notation is:
+    ${fen}
 
-  //   The valid moves are:
-  //   ${validMoves}
+    The valid moves are:
+    ${validMoves}
 
-  //   Pick a move from the list above that maximizes your chance of winning, and return a function in the provided format of starting square and ending square, Even if you think you can't win, still pick a valid move.`;
+    Pick a move from the list above that maximizes your chance of winning, and return a function in the provided format of starting square and ending square, Even if you think you can't win, still pick a valid move.`;
 
-  //     // console.log(gptSystemMsg);
+    // console.log(gptSystemMsg);
 
-  //     // const gptSystemMsg = "You are a helpful assisitant."
+    // const gptSystemMsg = "You are a helpful assisitant."
 
-  //     const gptMoveSchema = `{
-  //         "name": "makeMove",
-  //         "description": "Analyze current position in chess game and choose the next move.",
-  //         "parameters": {
-  //           "type": "object",
-  //           "properties": {
-  //             "from": {
-  //               "type": "string",
-  //               "description": "Square that the chosen piece is currently on."
-  //             },
-  //             "to": {
-  //               "type": "string",
-  //               "description": "Square onto which the chosen piece will move."
-  //             },
-  //             "newFen": {
-  //               "type": "string",
-  //               "description": "FEN notation of position after piece is moved."
-  //             }
-  //           },
-  //           "required": ["from", "to", "newFen"]
-  //         }
-  //       }`;
+    const gptMoveSchema = `{
+          "name": "makeMove",
+          "description": "Analyze current position in chess game and choose the next move.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Square that the chosen piece is currently on."
+              },
+              "to": {
+                "type": "string",
+                "description": "Square onto which the chosen piece will move."
+              },
+              "newFen": {
+                "type": "string",
+                "description": "FEN notation of position after piece is moved."
+              }
+            },
+            "required": ["from", "to", "newFen"]
+          }
+        }`;
 
-  //     const response = await fetch("https://api.openai.com/v1/chat/completions", {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${process.env.OPENAI_KEY}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         model: "gpt-4",
-  //         // model: "gpt-3.5-turbo",
-  //         messages: [{ role: "system", content: gptSystemMsg }],
-  //         functions: [JSON.parse(gptMoveSchema)],
-  //         function_call: { name: "makeMove" },
-  //       }),
-  //     });
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        // model: "gpt-3.5-turbo",
+        messages: [{ role: "system", content: gptSystemMsg }],
+        functions: [JSON.parse(gptMoveSchema)],
+        function_call: { name: "makeMove" },
+      }),
+    });
 
-  //     const resObject = await response.json();
+    const resObject = await response.json();
 
-  //     const responseMsg = resObject.choices[0].message;
-  //     console.log("response:", resObject);
-  //     // console.log("message:", responseMsg);
+    const responseMsg = resObject.choices[0].message;
+    console.log("response:", resObject);
+    console.log("message:", responseMsg);
 
-  //     if (responseMsg.function_call) {
-  //       res.json(JSON.parse(responseMsg.function_call.arguments));
-  //     }
-
-  //     // console.log("API key:", process.env.OPENAI_KEY);
-  //     // console.log("response from GPT:", resObject);
-  //   }
+    if (responseMsg.function_call) {
+      res.json(JSON.parse(responseMsg.function_call.arguments));
+    }
+  }
 });
 
 // create route
@@ -205,6 +195,7 @@ router.post("/create", async (req, res) => {
 
   const playerWhite = await User.findById(playerWhiteId);
   const playerBlack = await User.findById(playerBlackId);
+
   const position =
     fen === "start"
       ? `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR ${currentTurn} KQkq - 0 1`

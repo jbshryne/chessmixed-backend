@@ -13,11 +13,12 @@ const gameSchema = new Schema({
     username: String,
   },
   fen: { type: String, required: true },
+  pgn: String,
   gameTitle: String,
+  povColor: { type: String, required: true, default: "w" },
   currentTurn: { type: String, required: true },
   capturedWhite: [String],
   capturedBlack: [String],
-  // moveHistory: [String],
   // notes: [String],
   // difficultyLevel: String,
 });

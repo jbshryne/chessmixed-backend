@@ -85,7 +85,15 @@ router.get("/logout", (req, res) => {
 router.get("/friends/:id", async (req, res) => {
   console.log("req.body:", req.params.id);
   const user = await User.findById(req.params.id).populate("friends");
-  res.json(user.friends);
+  console.log("user.friends:", user.friends);
+  const friendsList = user.friends.map((friend) => {
+    return {
+      _id: friend._id,
+      username: friend.username,
+      displayName: friend.displayName,
+    };
+  });
+  res.json(friendsList);
 });
 
 module.exports = router;

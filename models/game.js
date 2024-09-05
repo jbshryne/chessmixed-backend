@@ -17,8 +17,14 @@ const gameSchema = new Schema({
   gameTitle: String,
   povColor: { type: String, required: true, default: "w" },
   currentTurn: { type: String, required: true },
-  capturedWhite: [String],
-  capturedBlack: [String],
+  // capturedWhite: [String],
+  // capturedBlack: [String],
+  captured: [
+    {
+      color: { type: String, required: true },
+      type: { type: String, required: true },
+    },
+  ],
   // notes: [String],
   // difficultyLevel: String,
 });

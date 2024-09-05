@@ -31,8 +31,7 @@ router.post("/seed", async (req, res) => {
       currentTurn: "w",
       fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       pgn: "",
-      capturedWhite: [],
-      capturedBlack: [],
+      captured: [],
     },
   ]);
 
@@ -90,10 +89,9 @@ router.put("/:id/move", async (req, res) => {
     fen,
     pgn,
     currentTurn,
+    captured,
     // validMoves, cpuOpponentColor
   } = req.body;
-
-  // console.log("move update route hit, pgn:", pgn);
 
   // prevent server getting flooded w/ updates
   if (moveUpdateTimeout) {
@@ -107,6 +105,7 @@ router.put("/:id/move", async (req, res) => {
         fen,
         pgn,
         currentTurn,
+        captured,
       },
       {
         new: true,
@@ -208,20 +207,19 @@ router.post("/create", async (req, res) => {
   const newGame = await Game.create({
     playerWhite: {
       playerId: playerWhiteId,
-      displayName: playerWhite?.displayName || "CPU",
+      displayName: playerWhite?.displayName || "Computer",
       username: playerWhite?.username || "cpu",
     },
     playerBlack: {
       playerId: playerBlackId,
-      displayName: playerBlack?.displayName || "CPU",
+      displayName: playerBlack?.displayName || "Computer",
       username: playerBlack?.username || "cpu",
     },
     povColor,
     currentTurn,
     fen: position,
     pgn: "",
-    capturedWhite: [],
-    capturedBlack: [],
+    captured: [],
   });
 
   if (playerWhiteId === playerBlackId) {

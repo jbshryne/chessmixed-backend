@@ -13,8 +13,6 @@ const io = new Server(server, {
     origin: "*",
   },
 });
-// const socketIo = require("socket.io");
-// const io = socketIo(server, );
 
 const userRoutes = require("./controllers/userController");
 const gameRoutes = require("./controllers/gameController");
@@ -41,7 +39,7 @@ app.get("/", (req, res) => {
 let loggedInUsers = [];
 
 io.on("connection", (socket) => {
-  // console.log(socket.id);
+  console.log("user connecting:", socket.id);
 
   socket.on("login", (currentUser) => {
     console.log("user who's joining:", currentUser.displayName);

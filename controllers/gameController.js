@@ -55,7 +55,7 @@ router.delete("/delete", async (req, res) => {
   if (result) {
     if (game.playerWhite.playerId !== "cpu") {
       const whitePlayer = await User.findById(game.playerWhite.playerId);
-      const whitePlayerGames = await User.findByIdAndUpdate(
+      await User.findByIdAndUpdate(
         whitePlayer._id,
         { $pull: { games: gameId } },
         { new: true }
@@ -63,7 +63,7 @@ router.delete("/delete", async (req, res) => {
     }
     if (game.playerBlack.playerId !== "cpu") {
       const blackPlayer = await User.findById(game.playerBlack.playerId);
-      const blackPlayerGames = await User.findByIdAndUpdate(
+      await User.findByIdAndUpdate(
         blackPlayer._id,
         { $pull: { games: gameId } },
         { new: true }
@@ -73,16 +73,16 @@ router.delete("/delete", async (req, res) => {
   }
 });
 
-// update route (main)
+// update route (edit boardstate)
 router.put("/:id", async (req, res) => {
-  const update = await Game.findOneAndUpdate({ _id: req.params.id }, req.body, {
+  const game = await Game.findOneAndUpdate({ _id: req.params.id }, req.body, {
     new: true,
   });
 
-  res.json(update);
+  res.json(game);
 });
 
-// // update route (move)
+// update route (move)
 let moveUpdateTimeout = null;
 router.put("/:id/move", async (req, res) => {
   const {
@@ -90,7 +90,7 @@ router.put("/:id/move", async (req, res) => {
     pgn,
     currentTurn,
     captured,
-    // validMoves, cpuOpponentColor
+    // validMoves, isCpuMove
   } = req.body;
 
   // prevent server getting flooded w/ updates
@@ -114,85 +114,94 @@ router.put("/:id/move", async (req, res) => {
     res.json(update);
     // res.json({ success: true });
   }, 750);
+});
 
-  // const formattedValidMoves = validMoves.map((move) => {
-  //   return `${move.from} to ${move.to}`;
-  // });
+// generate move route
+router.post("/:id/gpt-move", async (req, res) => {
+  const { fen, pgn, validMoves, cpuOpponentColor } = req.body;
 
-  // if (cpuOpponentColor && currentTurn === cpuOpponentColor) {
-  //   const gptSystemMsg = `You are a chess engine, playing a chess match against the user as ${
-  //     cpuOpponentColor === "b" ? "black" : "white"
-  //   } and trying to win.
+  const formattedValidMoves = validMoves.map((move) => {
+    return `${move.from} to ${move.to}`;
+  });
 
-  //   The current FEN notation is:
-  //   ${fen}
+  const gptSystemMsg = `You are a chess engine, playing a chess match against the user as ${
+    cpuOpponentColor === "b" ? "black" : "white"
+  }. For the difficulty of this game, you will be emulating the skill level of a beginning to intermediate player. You are trying to win, but feel free to make some non-optimal choices every few moves.
 
-  //   The current PGN notation is:
-  //   ${pgn}
+    The current FEN notation is:
+    ${fen}
 
-  //   The current valid moves are:
-  //   ${formattedValidMoves}
+    The current PGN notation is:
+    ${pgn}
 
-  //   Pick a move from the above list of valid moves that maximizes your chance of winning, and return a function in the provided format of starting square and ending square. Even if you think you can't win, still pick a valid move.`;
+    The current VALID MOVES are:
+    ${formattedValidMoves}
 
-  //   // const gptSystemMsg = "You are a helpful assisitant."
+    Pick a move from the above list of VALID MOVES, and return a function in the provided format of starting square and ending square (and promotion piece if applicable). Even if you think you can't win, you must still choose a move, and ONLY one from the VALID MOVE list.`;
 
-  //   console.log("gptSystemMsg:", gptSystemMsg);
-  //   console.log("formattedValidMoves:", formattedValidMoves);
+  console.log("gptSystemMsg:", gptSystemMsg);
+  console.log("formattedValidMoves:", formattedValidMoves);
 
-  //   const gptMoveSchema = `{
-  //         "name": "makeMove",
-  //         "description": "Analyze current position in chess game and choose the next move.",
-  //         "parameters": {
-  //           "type": "object",
-  //           "properties": {
-  //             "from": {
-  //               "type": "string",
-  //               "description": "Square that the chosen piece is currently on."
-  //             },
-  //             "to": {
-  //               "type": "string",
-  //               "description": "Square onto which the chosen piece will move."
-  //             },
-  //             "newFen": {
-  //               "type": "string",
-  //               "description": "FEN notation of position after piece is moved."
-  //             }
-  //           },
-  //           "required": ["from", "to", "newFen"]
-  //         }
-  //       }`;
+  const gptMoveSchema = `{
+          "name": "makeMove",
+          "description": "Analyze current position in chess game and choose the next move.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Square that the chosen piece is currently on."
+              },
+              "to": {
+                "type": "string",
+                "description": "Square onto which the chosen piece will move."
+              },
+              "promotion": {
+                "type": "string",
+                "description": "Piece letter (e.g. 'q') if a pawn is being promoted (if no promotion is happening, leave field blank)."
+              }
+            },
+            "required": ["from", "to"]
+          }
+        }`;
 
-  //   const response = await fetch("https://api.openai.com/v1/chat/completions", {
-  //     method: "POST",
-  //     headers: {
-  //       Authorization: `Bearer ${process.env.OPENAI_KEY}`,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       model: "gpt-4o",
-  //       // model: "gpt-3.5-turbo",
-  //       messages: [{ role: "system", content: gptSystemMsg }],
-  //       functions: [JSON.parse(gptMoveSchema)],
-  //       function_call: { name: "makeMove" },
-  //     }),
-  //   });
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.OPENAI_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-4o",
+      messages: [{ role: "system", content: gptSystemMsg }],
+      functions: [JSON.parse(gptMoveSchema)],
+      function_call: { name: "makeMove" },
+    }),
+  });
 
-  //   const resObject = await response.json();
+  const resObject = await response.json();
 
-  //   const responseMsg = resObject.choices[0].message;
+  const responseMsg = resObject.choices[0].message;
 
-  //   if (responseMsg.function_call) {
-  //     res.json(JSON.parse(responseMsg.function_call.arguments));
-  //   }
-  // }
+  console.log("response:", responseMsg.function_call.arguments);
+
+  if (responseMsg.function_call) {
+    res.json(JSON.parse(responseMsg.function_call.arguments));
+  }
 });
 
 // create route
 router.post("/create", async (req, res) => {
   console.log("req.body:", req.body);
 
-  const { playerWhiteId, playerBlackId, povColor, currentTurn, fen } = req.body;
+  const {
+    playerWhiteId,
+    playerBlackId,
+    povColor,
+    currentTurn,
+    fen,
+    difficulty,
+  } = req.body;
 
   const playerWhite =
     playerWhiteId === "cpu" ? "cpu" : await User.findById(playerWhiteId);
@@ -218,6 +227,7 @@ router.post("/create", async (req, res) => {
     povColor,
     currentTurn,
     fen: position,
+    difficulty,
     pgn: "",
     captured: [],
   });

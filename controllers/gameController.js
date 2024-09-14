@@ -126,7 +126,7 @@ router.post("/:id/gpt-move", async (req, res) => {
 
   const gptSystemMsg = `You are a chess engine, playing a chess match against the user as ${
     cpuOpponentColor === "b" ? "black" : "white"
-  }. For the difficulty of this game, you will be emulating the skill level of a beginning to intermediate player. You are trying to win, but feel free to make some non-optimal choices every few moves.
+  }. For your difficulty as an opponent, you will be emulating a player of intermediate skill level. You are trying to win, but feel free to make some non-optimal choices every few moves.
 
     The current FEN notation is:
     ${fen}
@@ -170,6 +170,7 @@ router.post("/:id/gpt-move", async (req, res) => {
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_KEY}`,
       "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
     },
     body: JSON.stringify({
       model: "gpt-4o",

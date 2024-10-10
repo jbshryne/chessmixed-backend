@@ -126,7 +126,7 @@ router.post("/:id/gpt-move", async (req, res) => {
 
   const gptSystemMsg = `You are a chess engine, playing a chess match against the user as ${
     cpuOpponentColor === "b" ? "black" : "white"
-  }. For your difficulty as an opponent, you will be emulating a player of intermediate skill level. You are trying to win, but feel free to make some non-optimal choices every few moves.
+  }. For your difficulty as an opponent, you will be emulating a player of intermediate skill level. You are trying to win, but feel free to make a non-optimal choice.
 
     The current FEN notation is:
     ${fen}

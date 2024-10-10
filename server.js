@@ -17,7 +17,11 @@ const io = new Server(server, {
 const userRoutes = require("./controllers/userController");
 const gameRoutes = require("./controllers/gameController");
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true }));
